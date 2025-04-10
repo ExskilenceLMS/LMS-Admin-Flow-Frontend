@@ -143,7 +143,6 @@ const Student: React.FC = () => {
       const college = colleges.find(college => college.college_code === selectedCollege);
       if (college) {
         setBranches(college.branches);
-        console.log(college.branches)
       }
     } else {
       setBranches([]);
@@ -270,7 +269,6 @@ const Student: React.FC = () => {
     setLoading(true);
     try {
       const json = { ...formData };
-      console.log(json)
       const response = await axios.post("https://exskilence-suite-be.azurewebsites.net/create_student/", json, {
         headers: {
           "Content-Type": "application/json",
@@ -476,8 +474,10 @@ const Student: React.FC = () => {
                   <td>{student.branch}</td>
                   <td role="button" onClick={async () => {
                     try {
+                      setLoading(true);
                       const response = await axios.post("https://exskilence-suite-be.azurewebsites.net/allocate_student/", { student_id: student.student_id });
                       fetchStudents();
+                      setLoading(false);
                     } catch (error) {
                       console.error("Error fetching students:", error);
                     }

@@ -6,7 +6,6 @@ const Rules: React.FC = () => {
   interface Structure {
     level: string;
     score: number;
-    testcase?: string;
     time: number;
   }
 
@@ -129,7 +128,7 @@ const Rules: React.FC = () => {
                       <div style={{ width: "25%" }}>Levels</div>
                       <div style={{ width: "15%" }}>Score</div>
                       {/* <div style={{ width: "25%" }}>Score for Correct Answer</div> */}
-                      {active === "coding" && <div style={{ width: "30%" }}>Test cases and score</div>}
+                      {/* {active === "coding" && <div style={{ width: "30%" }}>Test cases and score</div>} */}
                       <div style={{ width: "25%" }}>Time in minutes</div>
                       <div style={{ width: "10%" }}>Action</div>
                     </div>
@@ -140,7 +139,7 @@ const Rules: React.FC = () => {
                         <div key={index} className="d-flex justify-content-between p-1 ps-3">
                           <div style={{ width: "25%" }}>{level.level}</div>
                           <div style={{ width: "15%" }}>{level.score}</div>
-                          {active === "coding" && <div style={{ width: "30%" }}>{level.testcase}</div>}
+                          {/* {active === "coding" && <div style={{ width: "30%" }}>{level.testcase}</div>} */}
                           <div style={{ width: "25%" }}>{handleTime(level.time)}</div>
                           <div style={{ width: "10%" }}>
                             <img  role ="button" onClick={() => handleEdit(index)} src={Edit}/>
@@ -188,7 +187,7 @@ const Rules: React.FC = () => {
                   onChange={(e) => handleChange(e, "score")}
                 />
               </Form.Group>
-              {active === "coding" && (
+              {/* {active === "coding" && (
                 <Form.Group className="mt-3 d-flex align-items-center justify-content-between">
                   <Form.Label>Testcases and Score</Form.Label>
                   <Form.Control
@@ -200,7 +199,7 @@ const Rules: React.FC = () => {
                     onChange={(e) => handleChange(e, "testcase")}
                   />
                 </Form.Group>
-              )}
+              )} */}
               <Form.Group className="mt-3 d-flex align-items-center justify-content-between">
                 <Form.Label>Time in minutes</Form.Label>
                 <Form.Control

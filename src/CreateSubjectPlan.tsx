@@ -220,10 +220,16 @@ const CreateSubjectPlan: React.FC = () => {
     }
   }, [existingData]);
 
-  const handleCheckboxChange = (item: string, type: string, subTopic: SubTopic, itemData?: ContentItem) => {
+  const handleCheckboxChange = (
+    item: string,
+    type: "mcq" | "coding" | "video" | "file",
+    subTopic: SubTopic,
+    itemData?: ContentItem,
+    checked?: boolean
+  ) => {
     setSelectedItemsData(prev => {
       const newData = { ...prev };
-
+  
       if (!newData[subTopic.sub_topic_id]) {
         newData[subTopic.sub_topic_id] = {
           videos: {},
@@ -235,41 +241,63 @@ const CreateSubjectPlan: React.FC = () => {
           coding: {}
         };
       }
-
+  
       if (type === "mcq" || type === "coding") {
-        newData[subTopic.sub_topic_id][type] = item ? inputCounts[subTopic.sub_topic_id]?.[type] || {} : {};
+        if (checked) {
+          newData[subTopic.sub_topic_id][type] = inputCounts[subTopic.sub_topic_id]?.[type] || {};
+        } else {
+          newData[subTopic.sub_topic_id][type] = {};
+        }
       } else {
         const collection = type === "video" ? "videos" : "files";
-        if (itemData) {
+  
+        if (checked && itemData) {
           newData[subTopic.sub_topic_id][collection][item] = {
-            ...itemData,
+            ...itemData
           };
         } else {
           const { [item]: removed, ...rest } = newData[subTopic.sub_topic_id][collection];
           newData[subTopic.sub_topic_id][collection] = rest;
         }
       }
-
-      if (Object.keys(newData[subTopic.sub_topic_id].videos).length === 0 &&
+  
+      // Clean up if the subtopic has no data
+      if (
+        Object.keys(newData[subTopic.sub_topic_id].videos).length === 0 &&
         Object.keys(newData[subTopic.sub_topic_id].files).length === 0 &&
         Object.keys(newData[subTopic.sub_topic_id].mcq).length === 0 &&
-        Object.keys(newData[subTopic.sub_topic_id].coding).length === 0) {
+        Object.keys(newData[subTopic.sub_topic_id].coding).length === 0
+      ) {
         delete newData[subTopic.sub_topic_id];
       }
-
+  
       return newData;
     });
-
+  
+    // ✅ Fix for mcq/coding type enforcement
     if (type === "mcq" || type === "coding") {
-      setSelectedMcqCoding(prev => ({
-        ...prev,
-        [subTopic.sub_topic_id]: {
-          ...prev[subTopic.sub_topic_id],
-          [type]: item
+      setSelectedMcqCoding(prev => {
+        const updated = { ...prev };
+  
+        if (!updated[subTopic.sub_topic_id]) {
+          updated[subTopic.sub_topic_id] = { mcq: false, coding: false };
         }
-      }));
+  
+        updated[subTopic.sub_topic_id][type] = !!checked;
+  
+        // Clean up if both are false
+        if (
+          !updated[subTopic.sub_topic_id].mcq &&
+          !updated[subTopic.sub_topic_id].coding
+        ) {
+          delete updated[subTopic.sub_topic_id];
+        }
+  
+        return updated;
+      });
     }
   };
+  
 
   const isAllSelected = (subTopicId: string, videos?: { [key: string]: ContentItem }, files?: { [key: string]: ContentItem }) => {
     if (!videos && !files) return false;
@@ -954,7 +982,7 @@ const CreateSubjectPlan: React.FC = () => {
                                         <span>
                                           <input
                                             type="checkbox"
-                                            onChange={() => handleCheckboxChange(videoKey, "video", selectedsub, video)}
+                                            onChange={(e) => handleCheckboxChange(videoKey, "video", selectedsub, video, e.target.checked)}
                                             checked={isItemSelected(videoKey, "video", selectedsub.sub_topic_id)}
                                           />
                                           <strong className="ms-2">{videoKey.toLocaleUpperCase()}</strong> {video.text}
@@ -983,7 +1011,7 @@ const CreateSubjectPlan: React.FC = () => {
                                         <span>
                                           <input
                                             type="checkbox"
-                                            onChange={() => handleCheckboxChange(fileKey, "file", selectedsub, file)}
+                                            onChange={(e) => handleCheckboxChange(fileKey, "file", selectedsub, file, e.target.checked)}
                                             checked={isItemSelected(fileKey, "file", selectedsub.sub_topic_id)}
                                           />
                                           <strong className="ms-2">{fileKey.toLocaleUpperCase()}</strong> {file.text}
@@ -1001,14 +1029,21 @@ const CreateSubjectPlan: React.FC = () => {
                               </>
                             )}
                             <div className="me-4">
-                              <input
-                                type="checkbox"
-                                checked={selectedMcqCoding[subTopic.sub_topic_id]?.mcq || false}
-                                onChange={(e) => {
-                                  handleCheckboxChange(e.target.checked ? "mcq" : "", "mcq", subTopic);
-                                }}
-                                className="me-2"
-                              />
+                            <input
+  type="checkbox"
+  checked={selectedMcqCoding[subTopic.sub_topic_id]?.mcq || false}
+  onChange={(e) => {
+    handleCheckboxChange(
+      "mcq",            // item identifier (can be question ID or just "mcq")
+      "mcq",            // type
+      subTopic,         // subtopic
+      undefined,        // itemData not needed for mcq
+      e.target.checked  // actual checkbox state
+    );
+  }}
+  className="me-2"
+
+/>
                               <label>MCQ</label>
                               <br />
                               {topicLevels.map(level => (
@@ -1029,14 +1064,21 @@ const CreateSubjectPlan: React.FC = () => {
                               ))}
                             </div>
                             <div className="mt-2">
-                              <input
-                                type="checkbox"
-                                checked={selectedMcqCoding[subTopic.sub_topic_id]?.coding || false}
-                                onChange={(e) => {
-                                  handleCheckboxChange(e.target.checked ? "coding" : "", "coding", subTopic);
-                                }}
-                                className="me-2"
-                              />
+                            <input
+  type="checkbox"
+  checked={!!selectedMcqCoding[subTopic.sub_topic_id]?.coding}
+    className="me-2"
+  onChange={(e) => {
+    handleCheckboxChange(
+      "coding",        // item (could be any identifier, using "coding" as placeholder)
+      "coding",        // type
+      subTopic,        // subtopic
+      undefined,       // itemData (not needed for mcq/coding)
+      e.target.checked // checked status
+    );
+  }}
+/>
+
                               <label>Coding:</label>
                               <br />
                               {topicLevels.map(level => (
