@@ -962,7 +962,7 @@ const CreateSubjectPlan: React.FC = () => {
                                         <span>
                                           <strong className="me-3">{video.time}m</strong>
                                           <button className="border border-none rounded-2" onClick={() => handlePreviewClick(video.path!)} style={{ backgroundColor: "#F1F2FF" }}>
-                                            Preview
+                                            Preview 
                                           </button>
                                         </span>
                                       </div>
